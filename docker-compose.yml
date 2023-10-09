@@ -1,0 +1,46 @@
+version: '0.1'
+services:
+# Cấu hình engineX
+  nginx:
+    container_name: nginx-alpine
+    image: nginx:alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./:/var/www/html
+    networks:
+      - wp-networks
+
+# Cấu hình PHP
+  php:
+    container_name: php-fpm
+    build: 
+      context: .
+      dockerfile: PHP.Dockerfile
+    # image: php:fpm-alpine
+    volumes:
+      - ./:/var/www/html
+    working_dir: /var/www/html
+    # command: docker-php-ext-install mysqli
+    networks:
+      - wp-networks
+
+# Cấu hình database
+  mysql:
+    container_name: wp-mysql
+    image: mysql:8
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+    command: '--default-authentication-plugin=mysql_native_password'
+    # volumes:
+    #   - ./mysql:/var/lib/mysql
+    networks:
+      - wp-networks
+
+# Cấu hình network
+networks:
+  wp-networks:
+    driver: bridge
